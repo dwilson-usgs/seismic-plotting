@@ -14,7 +14,8 @@ import pickle
 import cartopy.crs as ccrs
 import cartopy
 import cartopy.feature as cfeature
-
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+import matplotlib.ticker as mticker
 client = Client("IRIS")
 
 
@@ -45,8 +46,8 @@ for cnet in inventory:
             
 slats = np.asarray(slats)
 slons = np.asarray(slons)
-x=np.arange(boxcoords[1],boxcoords[3],.2)
-y=np.arange(boxcoords[0],boxcoords[2],.2)
+x=np.arange(boxcoords[1],boxcoords[3],.25)
+y=np.arange(boxcoords[0],boxcoords[2],.25)
 results=[]
 for xi in x:
     for yi in y:
@@ -68,9 +69,7 @@ x=np.asarray(results[:,0])
 y=np.asarray(results[:,1])
 zd=np.asarray(results[:,2])
 
-extent=[boxcoords[1], boxcoords[3], boxcoords[0], boxcoords[2]]
-central_lon = np.mean(extent[:2])
-central_lat = np.mean(extent[2:])
+
 
 
 nbins=300
@@ -80,9 +79,13 @@ zdi = griddata( (x,y), zd, (xi, yi), method='cubic')
 matplotlib.rcParams['xtick.direction'] = 'out'
 matplotlib.rcParams['ytick.direction'] = 'out'
 
-
+# this is the cartopy section
+extent=[boxcoords[1], boxcoords[3], boxcoords[0], boxcoords[2]]
+central_lon = np.mean(extent[:2])
+central_lat = np.mean(extent[2:])
 plt.figure(2, figsize=(10,10))
-ax3 = plt.axes(projection=ccrs.AlbersEqualArea(central_lon, central_lat))
+#ax3 = plt.axes(projection=ccrs.AlbersEqualArea(central_lon, central_lat))
+ax3 = plt.axes(projection=ccrs.Mercator(central_longitude=central_lon))
 ax3.set_extent(extent)
 
 ax3.add_feature(cartopy.feature.OCEAN)
@@ -90,8 +93,15 @@ ax3.add_feature(cartopy.feature.LAND, edgecolor='black')
 ax3.add_feature(cartopy.feature.LAKES, edgecolor='black')
 ax3.add_feature(cartopy.feature.STATES, edgecolor='black')
 plt.contourf(xi, yi, zdi.reshape(xi.shape), cmap=plt.cm.plasma, transform=ccrs.PlateCarree() )
-# Add color bar
 
+gridlines=ax3.gridlines(draw_labels=True, color='gray', alpha=.5, linestyle=':')
+gridlines.xlabels_top=False
+gridlines.ylabels_right=False
+gridlines.xlocator = mticker.FixedLocator(np.arange(-80,-64,2))
+gridlines.ylocator = mticker.FixedLocator(np.arange(38,50,2))
+
+
+# Add color bar
 plt.clim(0.0,300)
 cbar=plt.colorbar()
 cbar.set_label('Distance to 5th nearest station')
