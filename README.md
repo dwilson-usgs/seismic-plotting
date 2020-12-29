@@ -1,6 +1,6 @@
 # seismic-plotting
 example codes for plotting seismic data
 
-The maping script require cartopy which you can install via conda
+The mapping script requires cartopy which you can install via conda
 
 conda install cartopy
